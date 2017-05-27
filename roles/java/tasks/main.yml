@@ -1,0 +1,33 @@
+---   
+    - hosts: demo
+      become: yes
+      become_method: sudo
+      vars:
+       path: vars/main.yml
+    - name: Download Java
+      command:  "wget -q -O {{java_archive}} --no-check-certificate --no-cookies --header 'Cookie: oraclelicense=accept-securebackup-cookie' {{download_url}} creates={{java_archive}}"
+
+    - name: Unpack archive
+      comand: "tar -zxf {{java_archive}} -C {{download_folder}} creates={{java_name}}"
+
+    - name: Fix ownership
+      file: state=directory path={{java_name}} owner=root group=root recurse=yes
+
+    - name: Make Java available for system
+      command: "{{item}}"
+      with_items:
+        - alternatives --install /usr/bin/java java {{java_name}}/bin/java 2
+        - alternatives --install /usr/bin/jar jar {{java_name}}/bin/jar 2
+        - alternatives --install /usr/bin/javac javac {{java_name}}/bin/javac 2
+        - alternatives --set jar {{java_name}}/bin/jar
+        - alternatives --set javac {{java_name}}/bin/javac
+
+    - name: Set environment Variables
+      raw: "{{item}}"
+      with_items:
+        - export JAVA_HOME={{java_name}}
+        - export JRE_HOME={{java_name}}/jre
+        - export PATH=$PATH:{{java_name}}/bin:{{java_name}}/jre/bin
+
+    - name: Clean up
+      file: state=absent path={{java_archive}}

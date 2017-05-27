@@ -1,0 +1,27 @@
+- hosts: maven1
+  become: yes
+  become_method: sudo
+  tasks:
+  - name: Variables
+    include_vars: /home/ansible/roles/tomcat/vars/main.yml
+
+  - name: Download tomcat
+    get_url: url={{ tomcat_source }}/{{ tomcat_tar }} dest={{ install_dir }}
+
+  - name: Extract archive
+    unarchive: src={{ install_dir }}/{{ tomcat_tar }} dest={{ install_dir }} remote_src=yes
+
+  - name: Write tomcat startupscript to init.d
+    template: src=/home/ansible/roles/tomcat/startupscript dest=/etc/init.d/tomcat8 mode=0755 owner=root backup=yes
+
+  - name: Add to the tomcat-users.xml file
+    lineinfile:
+      dest={{ install_dir }}/{{ tomcat_version }}/conf/tomcat-users.xml
+      state=present
+      insertbefore=^</tomcat-users>
+      line='<user username="oscarose" password="oscarose" roles="tomcat,admin-gui,manager-gui,manager-script"/>'
+
+  - name: Make sure tomcat runs on boot, and start the service
+    action: service name=tomcat8 enabled=yes state=started
+
+

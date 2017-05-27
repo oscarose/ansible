@@ -1,0 +1,6 @@
+---
+maven_source: http://mirror.olnevhost.net/pub/apache/maven/maven-3
+maven_install_dir: /opt
+maven_version: 3.2.5
+maven_tar: apache-maven-3.2.5-bin.tar.gz
+maven_file: apache-maven-3.2.5

@@ -1,0 +1,19 @@
+- hosts: maven
+  become: yes
+  become_method: sudo
+  tasks:
+  - name: variables
+    include_vars: /home/ansible/roles/maven/vars/main.yml
+
+  - name: download maven
+    get_url: url={{ maven_source }}/{{ maven_version }}/binaries/{{ maven_tar }} dest={{ maven_install_dir }} 
+ 
+  - name: Extract archive
+    command: chdir={{ maven_install_dir }} tar xvf {{ maven_tar }} 
+
+  - name: Set maven environment
+    raw: "{{ item }}"
+    with_items:
+      - export M2_HOME=/opt/{{ maven_file }}
+      - export M2=$M2_HOME/bin
+      - export PATH=$M2:$PATH
